@@ -43,7 +43,7 @@
     <section id='main' class="content mod">
 <h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>coyoneda</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="#" title="collapse all docs">[&minus;]</a>
-        </span><a id='src-0' class='srclink' href='../src/coyoneda/lib.rs.html#1-186' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-0' class='srclink' href='../src/coyoneda/lib.rs.html#1-189' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'>
 <h1 id="endofunctor-composition-via-the-co-yoneda-lemma" class='section-header'><a
                            href="#endofunctor-composition-via-the-co-yoneda-lemma">Endofunctor composition via the Co-Yoneda Lemma</a></h1>
@@ -104,7 +104,7 @@ to accumulate the mapping function, without changing the captured
 <p>The co-yoneda lemma states that for a covariant functor <code>f</code>,
 this <code>Coyoneda f</code> is naturally isomorphic to <code>f</code>.
 Practically speaking, this means that we can lift any <code>f a</code> into a <code>Coyoneda f a</code>,
-and given a function <code>(a -&gt; b) -&gt; f b</code>, we can retrieve back a <code>f a</code> from a <code>Coyoneda f a</code>.</p>
+and given a function <code>(a -&gt; b) -&gt; f b</code>, we can retrieve back a <code>f b</code> from a <code>Coyoneda f b</code>.</p>
 
 <h2 id="composing-coyoneda" class='section-header'><a
                            href="#composing-coyoneda">Composing Coyoneda</a></h2>

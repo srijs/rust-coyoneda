@@ -226,6 +226,9 @@
 <span id="184">184</span>
 <span id="185">185</span>
 <span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! # Endofunctor composition via the Co-Yoneda Lemma</span>
 <span class='doccomment'>//!</span>
@@ -290,7 +293,7 @@
 <span class='doccomment'>//! The co-yoneda lemma states that for a covariant functor `f`,</span>
 <span class='doccomment'>//! this `Coyoneda f` is naturally isomorphic to `f`.</span>
 <span class='doccomment'>//! Practically speaking, this means that we can lift any `f a` into a `Coyoneda f a`,</span>
-<span class='doccomment'>//! and given a function `(a -&gt; b) -&gt; f b`, we can retrieve back a `f a` from a `Coyoneda f a`.</span>
+<span class='doccomment'>//! and given a function `(a -&gt; b) -&gt; f b`, we can retrieve back a `f b` from a `Coyoneda f b`.</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ## Composing Coyoneda</span>
 <span class='doccomment'>//!</span>
@@ -325,7 +328,10 @@
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ... and for every other functor as well. Yay!</span>
 
-<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>morphism</span>;
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>box_syntax</span>)]</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>core</span>)]</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>feature</span>(<span class='ident'>unboxed_closures</span>)]</span>
+<span class='kw'>mod</span> <span class='ident'>morphism</span>;
 
 <span class='kw'>use</span> <span class='ident'>morphism</span>::<span class='ident'>Morphism</span>;
 
