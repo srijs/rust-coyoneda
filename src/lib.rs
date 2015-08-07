@@ -21,12 +21,9 @@
 //!
 //! ```
 //! fn add_and_to_string<F: Functor<i32, String>>(x: F) -> F::Output {
-//!    x.fmap(|n: i32| {
-//!        n + 1
-//!    }).fmap(|n: i32| {
-//!        n.to_string()
-//!    })
-//! }!
+//!    x.fmap(|n: i32| n + 1)
+//!     .fmap(|n: i32| n.to_string())
+//! }
 //! ```
 //!
 //! While functors in general can be encoded to some extend
@@ -71,27 +68,24 @@
 //! For example, let's implement a function that is generic for any functor:
 //!
 //! ```
-//! fn add_and_to_string<F: Functor<i32, String>>(x: F) -> F::Output {
-//!    Coyoneda::from(x).map(|n: i32| {
-//!        n + 1
-//!    }).map(|n: i32| {
-//!        n.to_string()
-//!    }).unwrap()
+//! fn add_and_to_string<T, A>(y: Coyoneda<T, A, i32>) -> Coyoneda<T, A, String> {
+//!    y.map(|n: i32| n + 1)
+//!     .map(|n: i32| n.to_string())
 //! }!
 //! ```
 //!
 //! Given we implemented a functor for `Option`, we can now do the following:
 //!
 //! ```
-//! let y = add_and_to_string(Some(42));
-//! assert_eq!(y, Some("43".to_string()))
+//! let y = add_and_to_string(From::from(Some(42)));
+//! assert_eq!(y.unwrap(), Some("43".to_string()))
 //! ```
 //!
 //! ... or for `Box`:
 //!
 //! ```
-//! let y = add_and_to_string(Box::new(42));
-//! assert_eq!(y, Box::new("43".to_string()))
+//! let y = add_and_to_string(From::from(Box::new(42)));
+//! assert_eq!(y.unwrap(), Box::new("43".to_string()))
 //! ```
 //!
 //! ... and for every other functor as well. Yay!
@@ -157,33 +151,32 @@ mod test {
 
     use super::*;
 
-    fn add_and_to_string<F: Functor<i32, String>>(x: F) -> F::Output {
-        Coyoneda::from(x).map(|n: i32| {
-            n + 1
-        }).map(|n: i32| {
-            n.to_string()
-        }).unwrap()
+    fn add_and_to_string<T, A>(y: Coyoneda<T, A, i32>) -> Coyoneda<T, A, String> {
+        y.map(|n: i32| n + 1)
+         .map(|n: i32| n.to_string())
+         .map(|s| s + "foo")
+         .map(|s| s + "bar")
     }
 
     #[test]
     fn test_box() {
         let x = Box::new(42);
-        let y = add_and_to_string(x);
-        assert_eq!(y, Box::new("43".to_string()))
+        let y = add_and_to_string(From::from(x)).unwrap();
+        assert_eq!(y, Box::new("43foobar".to_string()))
     }
 
     #[test]
     fn test_option() {
         let x = Some(42);
-        let y = add_and_to_string(x);
-        assert_eq!(y, Some("43".to_string()))
+        let y = add_and_to_string(From::from(x)).unwrap();
+        assert_eq!(y, Some("43foobar".to_string()))
     }
 
     #[test]
     fn test_result() {
         let x: Result<i32, ()> = Ok(42);
-        let y = add_and_to_string(x);
-        assert_eq!(y, Ok("43".to_string()))
+        let y = add_and_to_string(From::from(x)).unwrap();
+        assert_eq!(y, Ok("43foobar".to_string()))
     }
 
 }
