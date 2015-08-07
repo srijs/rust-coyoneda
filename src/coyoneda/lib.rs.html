@@ -229,6 +229,16 @@
 <span id="187">187</span>
 <span id="188">188</span>
 <span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! # Endofunctor composition via the Co-Yoneda Lemma</span>
 <span class='doccomment'>//!</span>
@@ -253,12 +263,9 @@
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ```</span>
 <span class='doccomment'>//! fn add_and_to_string&lt;F: Functor&lt;i32, String&gt;&gt;(x: F) -&gt; F::Output {</span>
-<span class='doccomment'>//!    x.fmap(|n: i32| {</span>
-<span class='doccomment'>//!        n + 1</span>
-<span class='doccomment'>//!    }).fmap(|n: i32| {</span>
-<span class='doccomment'>//!        n.to_string()</span>
-<span class='doccomment'>//!    })</span>
-<span class='doccomment'>//! }!</span>
+<span class='doccomment'>//!    x.fmap(|n: i32| n + 1)</span>
+<span class='doccomment'>//!     .fmap(|n: i32| n.to_string())</span>
+<span class='doccomment'>//! }</span>
 <span class='doccomment'>//! ```</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! While functors in general can be encoded to some extend</span>
@@ -303,27 +310,24 @@
 <span class='doccomment'>//! For example, let&#39;s implement a function that is generic for any functor:</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ```</span>
-<span class='doccomment'>//! fn add_and_to_string&lt;F: Functor&lt;i32, String&gt;&gt;(x: F) -&gt; F::Output {</span>
-<span class='doccomment'>//!    Coyoneda::from(x).map(|n: i32| {</span>
-<span class='doccomment'>//!        n + 1</span>
-<span class='doccomment'>//!    }).map(|n: i32| {</span>
-<span class='doccomment'>//!        n.to_string()</span>
-<span class='doccomment'>//!    }).unwrap()</span>
+<span class='doccomment'>//! fn add_and_to_string&lt;T&gt;(y: Coyoneda&lt;T, i32&gt;) -&gt; Coyoneda&lt;T, String&gt; {</span>
+<span class='doccomment'>//!    y.map(|n: i32| n + 1)</span>
+<span class='doccomment'>//!     .map(|n: i32| n.to_string())</span>
 <span class='doccomment'>//! }!</span>
 <span class='doccomment'>//! ```</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! Given we implemented a functor for `Option`, we can now do the following:</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ```</span>
-<span class='doccomment'>//! let y = add_and_to_string(Some(42));</span>
-<span class='doccomment'>//! assert_eq!(y, Some(&quot;43&quot;.to_string()))</span>
+<span class='doccomment'>//! let y = add_and_to_string(From::from(Some(42)));</span>
+<span class='doccomment'>//! assert_eq!(y.unwrap(), Some(&quot;43&quot;.to_string()))</span>
 <span class='doccomment'>//! ```</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ... or for `Box`:</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ```</span>
-<span class='doccomment'>//! let y = add_and_to_string(Box::new(42));</span>
-<span class='doccomment'>//! assert_eq!(y, Box::new(&quot;43&quot;.to_string()))</span>
+<span class='doccomment'>//! let y = add_and_to_string(From::from(Box::new(42)));</span>
+<span class='doccomment'>//! assert_eq!(y.unwrap(), Box::new(&quot;43&quot;.to_string()))</span>
 <span class='doccomment'>//! ```</span>
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! ... and for every other functor as well. Yay!</span>
@@ -335,32 +339,41 @@
 
 <span class='kw'>use</span> <span class='ident'>morphism</span>::<span class='ident'>Morphism</span>;
 
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
-    <span class='ident'>point</span>: <span class='ident'>T</span>,
-    <span class='ident'>morph</span>: <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span>
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
-
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>map</span><span class='op'>&lt;</span><span class='ident'>C</span>, <span class='ident'>F</span>: <span class='ident'>Fn</span>(<span class='ident'>B</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>A</span>, <span class='ident'>C</span><span class='op'>&gt;</span> {
-        <span class='ident'>Coyoneda</span>{<span class='ident'>point</span>: <span class='self'>self</span>.<span class='ident'>point</span>, <span class='ident'>morph</span>: <span class='self'>self</span>.<span class='ident'>morph</span>.<span class='ident'>tail</span>(<span class='ident'>f</span>)}
-    }
-
-    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>unwrap</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='op'>&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;&gt;</span>::<span class='ident'>Output</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
-        <span class='ident'>T</span>::<span class='ident'>fmap</span>(<span class='self'>self</span>.<span class='ident'>point</span>, <span class='self'>self</span>.<span class='ident'>morph</span>)
-    }
-
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>A</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>x</span>: <span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>A</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
-        <span class='ident'>Coyoneda</span>{<span class='ident'>point</span>: <span class='ident'>x</span>, <span class='ident'>morph</span>: <span class='ident'>Morphism</span>::<span class='ident'>new</span>()}
-    }
+<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>Unary</span> {
+    <span class='kw'>type</span> <span class='ident'>Param</span>;
 }
 
 <span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
     <span class='kw'>type</span> <span class='ident'>Output</span>;
     <span class='kw'>fn</span> <span class='ident'>fmap</span><span class='op'>&lt;</span><span class='ident'>F</span>: <span class='ident'>Fn</span>(<span class='ident'>A</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>Self</span>::<span class='ident'>Output</span>;
+}
+
+<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Unary</span> {
+    <span class='ident'>point</span>: <span class='ident'>T</span>,
+    <span class='ident'>morph</span>: <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>::<span class='ident'>Param</span>, <span class='ident'>B</span><span class='op'>&gt;</span>
+}
+
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='ident'>Unary</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
+
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>map</span><span class='op'>&lt;</span><span class='ident'>C</span>, <span class='ident'>F</span>: <span class='ident'>Fn</span>(<span class='ident'>B</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>C</span><span class='op'>&gt;</span> {
+        <span class='ident'>Coyoneda</span>{<span class='ident'>point</span>: <span class='self'>self</span>.<span class='ident'>point</span>, <span class='ident'>morph</span>: <span class='self'>self</span>.<span class='ident'>morph</span>.<span class='ident'>tail</span>(<span class='ident'>f</span>)}
+    }
+
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>unwrap</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='op'>&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Functor</span><span class='op'>&lt;&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Unary</span><span class='op'>&gt;</span>::<span class='ident'>Param</span>, <span class='ident'>B</span><span class='op'>&gt;&gt;</span>::<span class='ident'>Output</span>
+        <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Functor</span><span class='op'>&lt;&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Unary</span><span class='op'>&gt;</span>::<span class='ident'>Param</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
+        <span class='ident'>T</span>::<span class='ident'>fmap</span>(<span class='self'>self</span>.<span class='ident'>point</span>, <span class='self'>self</span>.<span class='ident'>morph</span>)
+    }
+
+}
+
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='ident'>Unary</span><span class='op'>&gt;</span> <span class='ident'>From</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='op'>&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Unary</span><span class='op'>&gt;</span>::<span class='ident'>Param</span><span class='op'>&gt;</span> {
+    <span class='kw'>fn</span> <span class='ident'>from</span>(<span class='ident'>x</span>: <span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='op'>&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Unary</span><span class='op'>&gt;</span>::<span class='ident'>Param</span><span class='op'>&gt;</span> {
+        <span class='ident'>Coyoneda</span>{<span class='ident'>point</span>: <span class='ident'>x</span>, <span class='ident'>morph</span>: <span class='ident'>Morphism</span>::<span class='ident'>new</span>()}
+    }
+}
+
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>Unary</span> <span class='kw'>for</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
+    <span class='kw'>type</span> <span class='ident'>Param</span> <span class='op'>=</span> <span class='ident'>A</span>;
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
@@ -370,11 +383,19 @@
     }
 }
 
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> <span class='ident'>Unary</span> <span class='kw'>for</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
+    <span class='kw'>type</span> <span class='ident'>Param</span> <span class='op'>=</span> <span class='ident'>A</span>;
+}
+
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span> {
     <span class='kw'>type</span> <span class='ident'>Output</span> <span class='op'>=</span> <span class='prelude-ty'>Option</span><span class='op'>&lt;</span><span class='ident'>B</span><span class='op'>&gt;</span>;
     <span class='kw'>fn</span> <span class='ident'>fmap</span><span class='op'>&lt;</span><span class='ident'>F</span>: <span class='ident'>Fn</span>(<span class='ident'>A</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>Self</span>::<span class='ident'>Output</span> {
         <span class='prelude-ty'>Option</span>::<span class='ident'>map</span>(<span class='self'>self</span>, <span class='ident'>f</span>)
     }
+}
+
+<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>E</span><span class='op'>&gt;</span> <span class='ident'>Unary</span> <span class='kw'>for</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>E</span><span class='op'>&gt;</span> {
+    <span class='kw'>type</span> <span class='ident'>Param</span> <span class='op'>=</span> <span class='ident'>A</span>;
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>E</span><span class='op'>&gt;</span> <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>E</span><span class='op'>&gt;</span> {
@@ -389,33 +410,32 @@
 
     <span class='kw'>use</span> <span class='ident'>super</span>::<span class='op'>*</span>;
 
-    <span class='kw'>fn</span> <span class='ident'>add_and_to_string</span><span class='op'>&lt;</span><span class='ident'>F</span>: <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='ident'>String</span><span class='op'>&gt;&gt;</span>(<span class='ident'>x</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>F</span>::<span class='ident'>Output</span> {
-        <span class='ident'>Coyoneda</span>::<span class='ident'>from</span>(<span class='ident'>x</span>).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>n</span>: <span class='ident'>i32</span><span class='op'>|</span> {
-            <span class='ident'>n</span> <span class='op'>+</span> <span class='number'>1</span>
-        }).<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>n</span>: <span class='ident'>i32</span><span class='op'>|</span> {
-            <span class='ident'>n</span>.<span class='ident'>to_string</span>()
-        }).<span class='ident'>unwrap</span>()
+    <span class='kw'>fn</span> <span class='ident'>add_and_to_string</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Unary</span><span class='op'>&gt;</span>(<span class='ident'>y</span>: <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>i32</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>String</span><span class='op'>&gt;</span> {
+        <span class='ident'>y</span>.<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>n</span>: <span class='ident'>i32</span><span class='op'>|</span> <span class='ident'>n</span> <span class='op'>+</span> <span class='number'>1</span>)
+         .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>n</span>: <span class='ident'>i32</span><span class='op'>|</span> <span class='ident'>n</span>.<span class='ident'>to_string</span>())
+         .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='ident'>s</span> <span class='op'>+</span> <span class='string'>&quot;foo&quot;</span>)
+         .<span class='ident'>map</span>(<span class='op'>|</span><span class='ident'>s</span><span class='op'>|</span> <span class='ident'>s</span> <span class='op'>+</span> <span class='string'>&quot;bar&quot;</span>)
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>test_box</span>() {
         <span class='kw'>let</span> <span class='ident'>x</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='number'>42</span>);
-        <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>add_and_to_string</span>(<span class='ident'>x</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>y</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='string'>&quot;43&quot;</span>.<span class='ident'>to_string</span>()))
+        <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>add_and_to_string</span>(<span class='ident'>From</span>::<span class='ident'>from</span>(<span class='ident'>x</span>)).<span class='ident'>unwrap</span>();
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>y</span>, <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='string'>&quot;43foobar&quot;</span>.<span class='ident'>to_string</span>()))
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>test_option</span>() {
         <span class='kw'>let</span> <span class='ident'>x</span> <span class='op'>=</span> <span class='prelude-val'>Some</span>(<span class='number'>42</span>);
-        <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>add_and_to_string</span>(<span class='ident'>x</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>y</span>, <span class='prelude-val'>Some</span>(<span class='string'>&quot;43&quot;</span>.<span class='ident'>to_string</span>()))
+        <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>add_and_to_string</span>(<span class='ident'>From</span>::<span class='ident'>from</span>(<span class='ident'>x</span>)).<span class='ident'>unwrap</span>();
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>y</span>, <span class='prelude-val'>Some</span>(<span class='string'>&quot;43foobar&quot;</span>.<span class='ident'>to_string</span>()))
     }
 
     <span class='attribute'>#[<span class='ident'>test</span>]</span>
     <span class='kw'>fn</span> <span class='ident'>test_result</span>() {
         <span class='kw'>let</span> <span class='ident'>x</span>: <span class='prelude-ty'>Result</span><span class='op'>&lt;</span><span class='ident'>i32</span>, ()<span class='op'>&gt;</span> <span class='op'>=</span> <span class='prelude-val'>Ok</span>(<span class='number'>42</span>);
-        <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>add_and_to_string</span>(<span class='ident'>x</span>);
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>y</span>, <span class='prelude-val'>Ok</span>(<span class='string'>&quot;43&quot;</span>.<span class='ident'>to_string</span>()))
+        <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>add_and_to_string</span>(<span class='ident'>From</span>::<span class='ident'>from</span>(<span class='ident'>x</span>)).<span class='ident'>unwrap</span>();
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>y</span>, <span class='prelude-val'>Ok</span>(<span class='string'>&quot;43foobar&quot;</span>.<span class='ident'>to_string</span>()))
     }
 
 }
