@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Morphism","A suspended chain of closures that behave as a function from type `A` to type `B`."]]});
