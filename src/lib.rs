@@ -97,49 +97,65 @@ mod morphism;
 
 use morphism::Morphism;
 
-pub struct Coyoneda<'a, T, A, B> {
-    point: T,
-    morph: Morphism<'a, A, B>
+pub trait Unary {
+    type Param;
 }
 
-impl<'a, T, A, B> Coyoneda<'a, T, A, B> {
+pub trait Functor<B>: Unary {
+    type Output;
+    fn fmap<F: Fn(Self::Param) -> B>(self, F) -> Self::Output;
+}
 
-    pub fn map<C, F: Fn(B) -> C + 'a>(self, f: F) -> Coyoneda<'a, T, A, C> {
+pub struct Coyoneda<'a, T, B> where T: Unary {
+    point: T,
+    morph: Morphism<'a, T::Param, B>
+}
+
+impl<'a, T: Unary, B> Coyoneda<'a, T, B> {
+
+    pub fn map<C, F: Fn(B) -> C + 'a>(self, f: F) -> Coyoneda<'a, T, C> {
         Coyoneda{point: self.point, morph: self.morph.tail(f)}
     }
 
-    pub fn unwrap(self) -> <T as Functor<A, B>>::Output where T: Functor<A, B> {
+    pub fn unwrap(self) -> <T as Functor<B>>::Output where T: Functor<B> {
         T::fmap(self.point, self.morph)
     }
 
 }
 
-impl<'a, T, A> From<T> for Coyoneda<'a, T, A, A> {
-    fn from(x: T) -> Coyoneda<'a, T, A, A> {
+impl<'a, T: Unary> From<T> for Coyoneda<'a, T, <T as Unary>::Param> {
+    fn from(x: T) -> Coyoneda<'a, T, <T as Unary>::Param> {
         Coyoneda{point: x, morph: Morphism::new()}
     }
 }
 
-pub trait Functor<A, B> {
-    type Output;
-    fn fmap<F: Fn(A) -> B>(self, F) -> Self::Output;
+impl<A> Unary for Box<A> {
+    type Param = A;
 }
 
-impl<A, B> Functor<A, B> for Box<A> {
+impl<A, B> Functor<B> for Box<A> {
     type Output = Box<B>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Box::new(f(*self))
     }
 }
 
-impl<A, B> Functor<A, B> for Option<A> {
+impl<A> Unary for Option<A> {
+    type Param = A;
+}
+
+impl<A, B> Functor<B> for Option<A> {
     type Output = Option<B>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Option::map(self, f)
     }
 }
 
-impl<A, B, E> Functor<A, B> for Result<A, E> {
+impl<A, E> Unary for Result<A, E> {
+    type Param = A;
+}
+
+impl<A, B, E> Functor<B> for Result<A, E> {
     type Output = Result<B, E>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Result::map(self, f)
@@ -151,7 +167,7 @@ mod test {
 
     use super::*;
 
-    fn add_and_to_string<T, A>(y: Coyoneda<T, A, i32>) -> Coyoneda<T, A, String> {
+    fn add_and_to_string<T: Unary>(y: Coyoneda<T, i32>) -> Coyoneda<T, String> {
         y.map(|n: i32| n + 1)
          .map(|n: i32| n.to_string())
          .map(|s| s + "foo")
