@@ -1,0 +1,12 @@
+[package]
+name = "coyoneda"
+version = "0.1.0"
+authors = ["Sam Rijs <srijs@airpost.net>"]
+description = "Functors for Rust via the co-Yoneda lemma."
+documentation = "http://srijs.github.io/rust-coyoneda/coyoneda"
+repository = "https://github.com/srijs/rust-coyoneda"
+license = "MIT"
+
+[dependencies.morphism]
+git = "https://github.com/srijs/morphism.rs.git"
+rev = "87ba03ec35c39bd11b39749d129b57b57e0f97a8"
