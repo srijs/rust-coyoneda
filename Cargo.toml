@@ -10,7 +10,3 @@ license = "MIT"
 [lib]
 name = "coyoneda"
 doctest = false
-
-[dependencies.morphism]
-git = "https://github.com/srijs/morphism.rs.git"
-rev = "87ba03ec35c39bd11b39749d129b57b57e0f97a8"

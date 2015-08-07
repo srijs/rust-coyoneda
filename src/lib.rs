@@ -96,7 +96,10 @@
 //!
 //! ... and for every other functor as well. Yay!
 
-extern crate morphism;
+#![feature(box_syntax)]
+#![feature(core)]
+#![feature(unboxed_closures)]
+mod morphism;
 
 use morphism::Morphism;
 
