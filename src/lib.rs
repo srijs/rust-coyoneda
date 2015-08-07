@@ -13,8 +13,8 @@ impl<'a, T, A, B> Coyoneda<'a, T, A, B> {
         Coyoneda{point: self.point, morph: self.morph.tail(f)}
     }
 
-    pub fn lower(self) -> <T as Map<A, B>>::Output where T: Map<A, B> {
-        T::map(self.point, self.morph)
+    pub fn lower(self) -> <T as Functor<A, B>>::Output where T: Functor<A, B> {
+        T::fmap(self.point, self.morph)
     }
 
 }
@@ -25,28 +25,28 @@ impl<'a, T, A> From<T> for Coyoneda<'a, T, A, A> {
     }
 }
 
-pub trait Map<A, B> {
+pub trait Functor<A, B> {
     type Output;
-    fn map<F: Fn(A) -> B>(self, F) -> Self::Output;
+    fn fmap<F: Fn(A) -> B>(self, F) -> Self::Output;
 }
 
-impl<A, B> Map<A, B> for Box<A> {
+impl<A, B> Functor<A, B> for Box<A> {
     type Output = Box<B>;
-    fn map<F: Fn(A) -> B>(self, f: F) -> Self::Output {
+    fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Box::new(f(*self))
     }
 }
 
-impl<A, B> Map<A, B> for Option<A> {
+impl<A, B> Functor<A, B> for Option<A> {
     type Output = Option<B>;
-    fn map<F: Fn(A) -> B>(self, f: F) -> Self::Output {
+    fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Option::map(self, f)
     }
 }
 
-impl<A, B, E> Map<A, B> for Result<A, E> {
+impl<A, B, E> Functor<A, B> for Result<A, E> {
     type Output = Result<B, E>;
-    fn map<F: Fn(A) -> B>(self, f: F) -> Self::Output {
+    fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Result::map(self, f)
     }
 }
