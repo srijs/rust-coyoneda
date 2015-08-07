@@ -101,9 +101,9 @@ pub trait Unary {
     type Param;
 }
 
-pub trait Functor<B>: Unary {
+pub trait Functor<A, B> {
     type Output;
-    fn fmap<F: Fn(Self::Param) -> B>(self, F) -> Self::Output;
+    fn fmap<F: Fn(A) -> B>(self, F) -> Self::Output;
 }
 
 pub struct Coyoneda<'a, T, B> where T: Unary {
@@ -117,7 +117,8 @@ impl<'a, T: Unary, B> Coyoneda<'a, T, B> {
         Coyoneda{point: self.point, morph: self.morph.tail(f)}
     }
 
-    pub fn unwrap(self) -> <T as Functor<B>>::Output where T: Functor<B> {
+    pub fn unwrap(self) -> <T as Functor<<T as Unary>::Param, B>>::Output
+        where T: Functor<<T as Unary>::Param, B> {
         T::fmap(self.point, self.morph)
     }
 
@@ -133,7 +134,7 @@ impl<A> Unary for Box<A> {
     type Param = A;
 }
 
-impl<A, B> Functor<B> for Box<A> {
+impl<A, B> Functor<A, B> for Box<A> {
     type Output = Box<B>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Box::new(f(*self))
@@ -144,7 +145,7 @@ impl<A> Unary for Option<A> {
     type Param = A;
 }
 
-impl<A, B> Functor<B> for Option<A> {
+impl<A, B> Functor<A, B> for Option<A> {
     type Output = Option<B>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Option::map(self, f)
@@ -155,7 +156,7 @@ impl<A, E> Unary for Result<A, E> {
     type Param = A;
 }
 
-impl<A, B, E> Functor<B> for Result<A, E> {
+impl<A, B, E> Functor<A, B> for Result<A, E> {
     type Output = Result<B, E>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Result::map(self, f)
