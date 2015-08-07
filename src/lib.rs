@@ -61,7 +61,7 @@
 //! The co-yoneda lemma states that for a covariant functor `f`,
 //! this `Coyoneda f` is naturally isomorphic to `f`.
 //! Practically speaking, this means that we can lift any `f a` into a `Coyoneda f a`,
-//! and given a function `(a -> b) -> f b`, we can retrieve back a `f a` from a `Coyoneda f a`.
+//! and given a function `(a -> b) -> f b`, we can retrieve back a `f b` from a `Coyoneda f b`.
 //!
 //! ## Composing Coyoneda
 //!
