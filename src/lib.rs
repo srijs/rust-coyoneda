@@ -68,7 +68,7 @@
 //! For example, let's implement a function that is generic for any functor:
 //!
 //! ```
-//! fn add_and_to_string<T, A>(y: Coyoneda<T, A, i32>) -> Coyoneda<T, A, String> {
+//! fn add_and_to_string<T>(y: Coyoneda<T, i32>) -> Coyoneda<T, String> {
 //!    y.map(|n: i32| n + 1)
 //!     .map(|n: i32| n.to_string())
 //! }!
