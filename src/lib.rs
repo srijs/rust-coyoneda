@@ -91,9 +91,6 @@
 //!
 //! ... and for every other functor as well. Yay!
 
-#![feature(box_syntax)]
-#![feature(core)]
-#![feature(unboxed_closures)]
 mod morphism;
 
 use morphism::Morphism;
@@ -114,8 +111,9 @@ pub struct Coyoneda<'a, T, B> where T: Unary {
 
 impl<'a, T: Unary, B> Coyoneda<'a, T, B> {
     pub fn unwrap(self) -> <T as Functor<'a, <T as Unary>::Param, B>>::Output
-        where T: Functor<'a, <T as Unary>::Param, B>, <T as Unary>::Param: 'a, B: 'a {
-        T::fmap(self.point, self.morph)
+        where T: Functor<'a, <T as Unary>::Param, B>, <T as Unary>::Param: 'a, B: 'a, T: 'a {
+        let m = self.morph;
+        T::fmap(self.point, move |a| { m.run(a) })
     }
 }
 

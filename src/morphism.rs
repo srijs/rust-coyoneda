@@ -39,7 +39,7 @@ impl Morphism<'static, Void> {
     /// ```rust
     /// use morphism::Morphism;
     ///
-    /// assert_eq!(Morphism::new::<u64>()(42u64), 42u64);
+    /// assert_eq!(Morphism::new::<u64>().run(42u64), 42u64);
     /// ```
     #[inline]
     pub fn new<'a, A>() -> Morphism<'a, A> {
@@ -68,13 +68,13 @@ impl<'a, B, C> Morphism<'a, B, C> {
             => {
                 // assert!(!mfns.is_empty())
                 let head = mfns.front_mut().unwrap();
-                let g = box move |ptr| {
+                let g = Box::new(move |ptr| {
                     transmute::<Box<B>, *const ()>(
-                        box f.call((
-                            *transmute::<*const (), Box<A>>(ptr)
-                                ,))
-                            )
-                };
+                        Box::new(
+                            f(*transmute::<*const (), Box<A>>(ptr))
+                        )
+                    )
+                });
                 head.push_front(g);
             },
         }
@@ -92,7 +92,7 @@ impl<'a, B, C> Morphism<'a, B, C> {
     ///     .head(|x: Option<u64>| x.map(|y| y.to_string()))
     ///     .head(|x: Option<u64>| x.map(|y| y - 42u64))
     ///     .head(|x: u64| Some(x + 42u64 + 42u64));
-    /// assert_eq!(f(0u64), Some("42".to_string()));
+    /// assert_eq!(f.run(0u64), Some("42".to_string()));
     /// ```
     #[inline]
     pub fn head<A, F>(self, f: F) -> Morphism<'a, A, C>
@@ -117,7 +117,7 @@ impl<'a, B, C> Morphism<'a, B, C> {
     /// for i in (0..10u64) {
     ///     (&mut f).push_front(move |x| x + i);
     /// }
-    /// assert_eq!(f(0u64), 45u64);
+    /// assert_eq!(f.run(0u64), 45u64);
     /// ```
     #[inline]
     pub fn push_front<F>(&mut self, f: F) -> ()
@@ -143,13 +143,13 @@ impl<'a, A, B> Morphism<'a, A, B> {
             => {
                 // assert!(!mfns.is_empty())
                 let tail = mfns.back_mut().unwrap();
-                let g = box move |ptr| {
+                let g = Box::new(move |ptr| {
                     transmute::<Box<C>, *const ()>(
-                        box f.call((
-                            *transmute::<*const (), Box<B>>(ptr)
-                        ,))
+                        Box::new(
+                            f(*transmute::<*const (), Box<B>>(ptr))
+                        )
                     )
-                };
+                });
                 tail.push_back(g);
             },
         }
@@ -167,7 +167,7 @@ impl<'a, A, B> Morphism<'a, A, B> {
     ///     .tail(|x| Some(x + 42u64 + 42u64))
     ///     .tail(|x| x.map(|y| y - 42u64))
     ///     .tail(|x| x.map(|y| y.to_string()));
-    /// assert_eq!(f(0u64), Some("42".to_string()));
+    /// assert_eq!(f.run(0u64), Some("42".to_string()));
     /// ```
     #[inline]
     pub fn tail<C, F>(self, f: F) -> Morphism<'a, A, C>
@@ -192,7 +192,7 @@ impl<'a, A, B> Morphism<'a, A, B> {
     /// for i in (0..10u64) {
     ///     (&mut f).push_back(move |x| x + i);
     /// }
-    /// assert_eq!(f(0u64), 45u64);
+    /// assert_eq!(f.run(0u64), 45u64);
     /// ```
     #[inline]
     pub fn push_back<F>(&mut self, f: F) -> ()
@@ -224,7 +224,7 @@ impl<'a, A, B> Morphism<'a, A, B> {
     /// // the type changes to Morphism<Option<u64>, String> so rebind g
     /// let g = g.tail(|x| x.map(|y| y + 1000u64).unwrap().to_string());
     ///
-    /// assert_eq!(f.then(g)(0u64), "1042".to_string());
+    /// assert_eq!(f.then(g).run(0u64), "1042".to_string());
     /// ```
     #[inline]
     pub fn then<C>(self, mut other: Morphism<'a, B, C>) -> Morphism<'a, A, C> {
@@ -256,34 +256,15 @@ impl<'a, A, B> Morphism<'a, A, B> {
     /// Given an argument, run the chain of closures in a loop and return the
     /// final result.
     #[inline]
-    fn run(&self, x: A) -> B { unsafe {
-        let mut res = transmute::<Box<A>, *const ()>(box x);
+    pub fn run(&self, x: A) -> B { unsafe {
+        let mut res = transmute::<Box<A>, *const ()>(Box::new(x));
         for fns in self.mfns.iter() {
             for f in fns.iter() {
-                res = f.call((res,));
+                res = f(res);
             }
         }
         *transmute::<*const (), Box<B>>(res)
     }}
-}
-
-impl<'a, A, B> FnOnce<(A,)> for Morphism<'a, A, B> {
-    type Output = B;
-    extern "rust-call" fn call_once(self, (x,): (A,)) -> B {
-        self.run(x)
-    }
-}
-
-impl<'a, A, B> FnMut<(A,)> for Morphism<'a, A, B> {
-    extern "rust-call" fn call_mut(&mut self, (x,): (A,)) -> B {
-        self.run(x)
-    }
-}
-
-impl<'a, A, B> Fn<(A,)> for Morphism<'a, A, B> {
-    extern "rust-call" fn call(&self, (x,): (A,)) -> B {
-        self.run(x)
-    }
 }
 
 #[cfg(test)]
@@ -312,20 +293,8 @@ mod tests
 
         let h = f.then(g);
 
-        assert_eq!(h(0u64), (Some(1084), true, "welp".to_string()));
-        assert_eq!(h(1000u64), (Some(2084), true, "welp".to_string()));
+        assert_eq!(h.run(0u64), (Some(1084), true, "welp".to_string()));
+        assert_eq!(h.run(1000u64), (Some(2084), true, "welp".to_string()));
     }
 
-    #[test]
-    fn fn_like() {
-        let mut f = Morphism::new::<u64>();
-        for _ in (0..10000) {
-            f = f.tail(|x| x + 42);
-        }
-
-        // ::map treats f like any other Fn
-        let res: u64 = (0..100).map(f).sum();
-
-        assert_eq!(res, 42004950);
-    }
 }
