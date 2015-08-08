@@ -8,9 +8,9 @@
 //! will look something like this:
 //!
 //! ```
-//! pub trait Functor<A, B> {
+//! pub trait Functor<'a, A, B> {
 //!    type Output;
-//!    fn fmap<F: Fn(A) -> B>(self, F) -> Self::Output;
+//!    fn fmap<F: Fn(A) -> B + 'a>(self, F) -> Self::Output;
 //! }
 //! ```
 //!
@@ -20,7 +20,7 @@
 //! For example, the following will not compile:
 //!
 //! ```
-//! fn add_and_to_string<F: Functor<i32, String>>(x: F) -> F::Output {
+//! fn add_and_to_string<'a, F: Functor<'a, i32, String>>(x: F) -> F::Output {
 //!    x.fmap(|n: i32| n + 1)
 //!     .fmap(|n: i32| n.to_string())
 //! }
@@ -65,12 +65,13 @@
 //! Now here's the catch: Since we have a parameterized datatype that is isomorphic to any functor,
 //! we can lift functors into Coyoneda to compose them safely within Rust's type system!
 //!
-//! For example, let's implement a function that is generic for any functor:
+//! For example, let's implement a function that is generic for any functor,
+//! by operating on our `Coyoneda` type:
 //!
 //! ```
 //! fn add_and_to_string<T>(y: Coyoneda<T, i32>) -> Coyoneda<T, String> {
-//!    y.map(|n: i32| n + 1)
-//!     .map(|n: i32| n.to_string())
+//!    y.fmap(|n: i32| n + 1)
+//!     .fmap(|n: i32| n.to_string())
 //! }
 //! ```
 //!
@@ -101,9 +102,9 @@ pub trait Unary {
     type Param;
 }
 
-pub trait Functor<A, B> {
+pub trait Functor<'a, A, B> {
     type Output;
-    fn fmap<F: Fn(A) -> B>(self, F) -> Self::Output;
+    fn fmap<F: Fn(A) -> B + 'a>(self, F) -> Self::Output;
 }
 
 pub struct Coyoneda<'a, T, B> where T: Unary {
@@ -112,16 +113,17 @@ pub struct Coyoneda<'a, T, B> where T: Unary {
 }
 
 impl<'a, T: Unary, B> Coyoneda<'a, T, B> {
-
-    pub fn map<C, F: Fn(B) -> C + 'a>(self, f: F) -> Coyoneda<'a, T, C> {
-        Coyoneda{point: self.point, morph: self.morph.tail(f)}
-    }
-
-    pub fn unwrap(self) -> <T as Functor<<T as Unary>::Param, B>>::Output
-        where T: Functor<<T as Unary>::Param, B> {
+    pub fn unwrap(self) -> <T as Functor<'a, <T as Unary>::Param, B>>::Output
+        where T: Functor<'a, <T as Unary>::Param, B>, <T as Unary>::Param: 'a, B: 'a {
         T::fmap(self.point, self.morph)
     }
+}
 
+impl<'a, T: Unary, B, C> Functor<'a, B, C> for Coyoneda<'a, T, B> {
+    type Output = Coyoneda<'a, T, C>;
+    fn fmap<F: Fn(B) -> C + 'a>(self, f: F) -> Coyoneda<'a, T, C> {
+        Coyoneda{point: self.point, morph: self.morph.tail(f)}
+    }
 }
 
 impl<'a, T: Unary> From<T> for Coyoneda<'a, T, <T as Unary>::Param> {
@@ -134,7 +136,7 @@ impl<A> Unary for Box<A> {
     type Param = A;
 }
 
-impl<A, B> Functor<A, B> for Box<A> {
+impl<'a, A, B> Functor<'a, A, B> for Box<A> {
     type Output = Box<B>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Box::new(f(*self))
@@ -145,7 +147,7 @@ impl<A> Unary for Option<A> {
     type Param = A;
 }
 
-impl<A, B> Functor<A, B> for Option<A> {
+impl<'a, A, B> Functor<'a, A, B> for Option<A> {
     type Output = Option<B>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Option::map(self, f)
@@ -156,7 +158,7 @@ impl<A, E> Unary for Result<A, E> {
     type Param = A;
 }
 
-impl<A, B, E> Functor<A, B> for Result<A, E> {
+impl<'a, A, B, E> Functor<'a, A, B> for Result<A, E> {
     type Output = Result<B, E>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Result::map(self, f)
@@ -169,10 +171,10 @@ mod test {
     use super::*;
 
     fn add_and_to_string<T: Unary>(y: Coyoneda<T, i32>) -> Coyoneda<T, String> {
-        y.map(|n: i32| n + 1)
-         .map(|n: i32| n.to_string())
-         .map(|s| s + "foo")
-         .map(|s| s + "bar")
+        y.fmap(|n: i32| n + 1)
+         .fmap(|n: i32| n.to_string())
+         .fmap(|s| s + "foo")
+         .fmap(|s| s + "bar")
     }
 
     #[test]
