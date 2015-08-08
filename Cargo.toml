@@ -1,6 +1,6 @@
 [package]
 name = "coyoneda"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Sam Rijs <srijs@airpost.net>"]
 description = "Functors for Rust via the co-Yoneda lemma."
 documentation = "http://srijs.github.io/rust-coyoneda/coyoneda"
