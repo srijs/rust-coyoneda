@@ -43,10 +43,10 @@
     <section id='main' class="content mod">
 <h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>coyoneda</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="#" title="collapse all docs">[&minus;]</a>
-        </span><a id='src-0' class='srclink' href='../src/coyoneda/lib.rs.html#1-204' title='goto source code'>[src]</a></span></h1>
+        </span><a id='src-0' class='srclink' href='../src/coyoneda/lib.rs.html#1-201' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'>
-<h1 id="endofunctor-composition-via-the-co-yoneda-lemma" class='section-header'><a
-                           href="#endofunctor-composition-via-the-co-yoneda-lemma">Endofunctor composition via the Co-Yoneda Lemma</a></h1>
+<h1 id="functor-composition-via-the-co-yoneda-lemma" class='section-header'><a
+                           href="#functor-composition-via-the-co-yoneda-lemma">Functor composition via the Co-Yoneda Lemma</a></h1>
 <h2 id="functors-in-rust" class='section-header'><a
                            href="#functors-in-rust">Functors in Rust</a></h2>
 <p>Let&#39;s implement functors in Rust!</p>
@@ -72,17 +72,14 @@ For example, the following will not compile:</p>
 </pre>
 
 <p>While functors in general can be encoded to some extend
-in Rust&#39;s trait system, what we usually mean when we
-say &quot;Functor&quot; is a covariant endofunctor.
-An endofunctor is a functor that maps back to the same category,
-e.g. it maps a function between <code>A</code> and <code>B</code> to a function between
-<code>Box&lt;A&gt;</code> and <code>Box&lt;B&gt;</code>, not between <code>Box&lt;A&gt;</code> and <code>Option&lt;B&gt;</code>.</p>
+in Rust&#39;s trait system, what we can&#39;t encode for a lack of higher-kinded
+types, is the fact that a functor <code>Box</code> maps a function between <code>A</code> and <code>B</code>
+to a function between <code>Box&lt;A&gt;</code> and <code>Box&lt;B&gt;</code>, not between <code>Box&lt;A&gt;</code> and <code>Option&lt;B&gt;</code>.</p>
 
 <p>Especially when looking at functor composition, it is useful to
-be able to encode endofunctors, because it allows us to chain
+be able to encode this fact, because it allows us to chain
 multiple calls to <code>fmap</code>, knowing that the result is also a functor,
-and can be <code>fmap</code>&#39;ed further. In Rust this is not possible,
-because of a lack of higher-kinded types.</p>
+and can be <code>fmap</code>&#39;ed further.</p>
 
 <h2 id="the-co-yoneda-lemma" class='section-header'><a
                            href="#the-co-yoneda-lemma">The Co-Yoneda Lemma</a></h2>
