@@ -1,4 +1,4 @@
-//! # Endofunctor composition via the Co-Yoneda Lemma
+//! # Functor composition via the Co-Yoneda Lemma
 //!
 //! ## Functors in Rust
 //!
@@ -27,17 +27,14 @@
 //! ```
 //!
 //! While functors in general can be encoded to some extend
-//! in Rust's trait system, what we usually mean when we
-//! say "Functor" is a covariant endofunctor.
-//! An endofunctor is a functor that maps back to the same category,
-//! e.g. it maps a function between `A` and `B` to a function between
-//! `Box<A>` and `Box<B>`, not between `Box<A>` and `Option<B>`.
+//! in Rust's trait system, what we can't encode for a lack of higher-kinded
+//! types, is the fact that a functor `Box` maps a function between `A` and `B`
+//! to a function between `Box<A>` and `Box<B>`, not between `Box<A>` and `Option<B>`.
 //!
 //! Especially when looking at functor composition, it is useful to
-//! be able to encode endofunctors, because it allows us to chain
+//! be able to encode this fact, because it allows us to chain
 //! multiple calls to `fmap`, knowing that the result is also a functor,
-//! and can be `fmap`'ed further. In Rust this is not possible,
-//! because of a lack of higher-kinded types.
+//! and can be `fmap`'ed further.
 //!
 //! ## The Co-Yoneda Lemma
 //!
