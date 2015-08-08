@@ -43,22 +43,23 @@
     <section id='main' class="content trait">
 <h1 class='fqn'><span class='in-band'>Trait <a href='index.html'>coyoneda</a>::<wbr><a class='trait' href=''>Functor</a></span><span class='out-of-band'><span id='render-detail'>
             <a id="toggle-all-docs" href="#" title="collapse all docs">[&minus;]</a>
-        </span><a id='src-536' class='srclink' href='../src/coyoneda/lib.rs.html#104-107' title='goto source code'>[src]</a></span></h1>
-<pre class='rust trait'>pub trait Functor&lt;A, B&gt; {
+        </span><a id='src-536' class='srclink' href='../src/coyoneda/lib.rs.html#108-111' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait Functor&lt;'a, A, B&gt; {
     type Output;
-    fn <a href='#tymethod.fmap' class='fnname'>fmap</a>&lt;F: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>(A) -&gt; B&gt;(self, F) -&gt; Self::<a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Output</a>;
+    fn <a href='#tymethod.fmap' class='fnname'>fmap</a>&lt;F: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>(A) -&gt; B + 'a&gt;(self, F) -&gt; Self::<a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Output</a>;
 }</pre>
             <h2 id='associated-types'>Associated Types</h2>
             <div class='methods'>
         <h3 id='associatedtype.Output' class='method stab '><code>type Output</code></h3></div>
             <h2 id='required-methods'>Required Methods</h2>
             <div class='methods'>
-        <h3 id='tymethod.fmap' class='method stab '><code>fn <a href='#tymethod.fmap' class='fnname'>fmap</a>&lt;F: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>(A) -&gt; B&gt;(self, F) -&gt; Self::<a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Output</a></code></h3></div>
+        <h3 id='tymethod.fmap' class='method stab '><code>fn <a href='#tymethod.fmap' class='fnname'>fmap</a>&lt;F: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Fn.html' title='core::ops::Fn'>Fn</a>(A) -&gt; B + 'a&gt;(self, F) -&gt; Self::<a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Output</a></code></h3></div>
         <h2 id='implementors'>Implementors</h2>
         <ul class='item-list' id='implementors-list'>
-    <li><code>impl&lt;A, B&gt; <a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Functor</a>&lt;A, B&gt; for <a class='struct' href='http://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;A&gt;</code></li>
-<li><code>impl&lt;A, B&gt; <a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Functor</a>&lt;A, B&gt; for <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;A&gt;</code></li>
-<li><code>impl&lt;A, B, E&gt; <a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Functor</a>&lt;A, B&gt; for <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;A, E&gt;</code></li>
+    <li><code>impl&lt;'a, T: <a class='trait' href='../coyoneda/trait.Unary.html' title='coyoneda::Unary'>Unary</a>, B, C&gt; <a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Functor</a>&lt;'a, B, C&gt; for <a class='struct' href='../coyoneda/struct.Coyoneda.html' title='coyoneda::Coyoneda'>Coyoneda</a>&lt;'a, T, B&gt;</code></li>
+<li><code>impl&lt;'a, A, B&gt; <a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Functor</a>&lt;'a, A, B&gt; for <a class='struct' href='http://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html' title='alloc::boxed::Box'>Box</a>&lt;A&gt;</code></li>
+<li><code>impl&lt;'a, A, B&gt; <a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Functor</a>&lt;'a, A, B&gt; for <a class='enum' href='http://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;A&gt;</code></li>
+<li><code>impl&lt;'a, A, B, E&gt; <a class='trait' href='../coyoneda/trait.Functor.html' title='coyoneda::Functor'>Functor</a>&lt;'a, A, B&gt; for <a class='enum' href='http://doc.rust-lang.org/nightly/core/result/enum.Result.html' title='core::result::Result'>Result</a>&lt;A, E&gt;</code></li>
 </ul><script type="text/javascript" async
                               src="../implementors/coyoneda/trait.Functor.js">
                       </script></section>
