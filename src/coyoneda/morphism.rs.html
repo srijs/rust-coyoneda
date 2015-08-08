@@ -340,37 +340,6 @@
 <span id="298">298</span>
 <span id="299">299</span>
 <span id="300">300</span>
-<span id="301">301</span>
-<span id="302">302</span>
-<span id="303">303</span>
-<span id="304">304</span>
-<span id="305">305</span>
-<span id="306">306</span>
-<span id="307">307</span>
-<span id="308">308</span>
-<span id="309">309</span>
-<span id="310">310</span>
-<span id="311">311</span>
-<span id="312">312</span>
-<span id="313">313</span>
-<span id="314">314</span>
-<span id="315">315</span>
-<span id="316">316</span>
-<span id="317">317</span>
-<span id="318">318</span>
-<span id="319">319</span>
-<span id="320">320</span>
-<span id="321">321</span>
-<span id="322">322</span>
-<span id="323">323</span>
-<span id="324">324</span>
-<span id="325">325</span>
-<span id="326">326</span>
-<span id="327">327</span>
-<span id="328">328</span>
-<span id="329">329</span>
-<span id="330">330</span>
-<span id="331">331</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! This crate provides a structure for suspended closure composition.</span>
 <span class='doccomment'>//! Composition is delayed and executed in a loop when a `Morphism` is</span>
@@ -413,7 +382,7 @@
     <span class='doccomment'>/// ```rust</span>
     <span class='doccomment'>/// use morphism::Morphism;</span>
     <span class='doccomment'>///</span>
-    <span class='doccomment'>/// assert_eq!(Morphism::new::&lt;u64&gt;()(42u64), 42u64);</span>
+    <span class='doccomment'>/// assert_eq!(Morphism::new::&lt;u64&gt;().run(42u64), 42u64);</span>
     <span class='doccomment'>/// ```</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span><span class='op'>&gt;</span>() <span class='op'>-&gt;</span> <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span><span class='op'>&gt;</span> {
@@ -442,13 +411,13 @@
             <span class='op'>=&gt;</span> {
                 <span class='comment'>// assert!(!mfns.is_empty())</span>
                 <span class='kw'>let</span> <span class='ident'>head</span> <span class='op'>=</span> <span class='ident'>mfns</span>.<span class='ident'>front_mut</span>().<span class='ident'>unwrap</span>();
-                <span class='kw'>let</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='kw'>box</span> <span class='kw'>move</span> <span class='op'>|</span><span class='ident'>ptr</span><span class='op'>|</span> {
+                <span class='kw'>let</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='kw'>move</span> <span class='op'>|</span><span class='ident'>ptr</span><span class='op'>|</span> {
                     <span class='ident'>transmute</span>::<span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>B</span><span class='op'>&gt;</span>, <span class='op'>*</span><span class='kw'>const</span> ()<span class='op'>&gt;</span>(
-                        <span class='kw'>box</span> <span class='ident'>f</span>.<span class='ident'>call</span>((
-                            <span class='op'>*</span><span class='ident'>transmute</span>::<span class='op'>&lt;</span><span class='op'>*</span><span class='kw'>const</span> (), <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;&gt;</span>(<span class='ident'>ptr</span>)
-                                ,))
-                            )
-                };
+                        <span class='ident'>Box</span>::<span class='ident'>new</span>(
+                            <span class='ident'>f</span>(<span class='op'>*</span><span class='ident'>transmute</span>::<span class='op'>&lt;</span><span class='op'>*</span><span class='kw'>const</span> (), <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;&gt;</span>(<span class='ident'>ptr</span>))
+                        )
+                    )
+                });
                 <span class='ident'>head</span>.<span class='ident'>push_front</span>(<span class='ident'>g</span>);
             },
         }
@@ -466,7 +435,7 @@
     <span class='doccomment'>///     .head(|x: Option&lt;u64&gt;| x.map(|y| y.to_string()))</span>
     <span class='doccomment'>///     .head(|x: Option&lt;u64&gt;| x.map(|y| y - 42u64))</span>
     <span class='doccomment'>///     .head(|x: u64| Some(x + 42u64 + 42u64));</span>
-    <span class='doccomment'>/// assert_eq!(f(0u64), Some(&quot;42&quot;.to_string()));</span>
+    <span class='doccomment'>/// assert_eq!(f.run(0u64), Some(&quot;42&quot;.to_string()));</span>
     <span class='doccomment'>/// ```</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>head</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>F</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>C</span><span class='op'>&gt;</span>
@@ -491,7 +460,7 @@
     <span class='doccomment'>/// for i in (0..10u64) {</span>
     <span class='doccomment'>///     (&amp;mut f).push_front(move |x| x + i);</span>
     <span class='doccomment'>/// }</span>
-    <span class='doccomment'>/// assert_eq!(f(0u64), 45u64);</span>
+    <span class='doccomment'>/// assert_eq!(f.run(0u64), 45u64);</span>
     <span class='doccomment'>/// ```</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>push_front</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> ()
@@ -517,13 +486,13 @@
             <span class='op'>=&gt;</span> {
                 <span class='comment'>// assert!(!mfns.is_empty())</span>
                 <span class='kw'>let</span> <span class='ident'>tail</span> <span class='op'>=</span> <span class='ident'>mfns</span>.<span class='ident'>back_mut</span>().<span class='ident'>unwrap</span>();
-                <span class='kw'>let</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='kw'>box</span> <span class='kw'>move</span> <span class='op'>|</span><span class='ident'>ptr</span><span class='op'>|</span> {
+                <span class='kw'>let</span> <span class='ident'>g</span> <span class='op'>=</span> <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='kw'>move</span> <span class='op'>|</span><span class='ident'>ptr</span><span class='op'>|</span> {
                     <span class='ident'>transmute</span>::<span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>C</span><span class='op'>&gt;</span>, <span class='op'>*</span><span class='kw'>const</span> ()<span class='op'>&gt;</span>(
-                        <span class='kw'>box</span> <span class='ident'>f</span>.<span class='ident'>call</span>((
-                            <span class='op'>*</span><span class='ident'>transmute</span>::<span class='op'>&lt;</span><span class='op'>*</span><span class='kw'>const</span> (), <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>B</span><span class='op'>&gt;&gt;</span>(<span class='ident'>ptr</span>)
-                        ,))
+                        <span class='ident'>Box</span>::<span class='ident'>new</span>(
+                            <span class='ident'>f</span>(<span class='op'>*</span><span class='ident'>transmute</span>::<span class='op'>&lt;</span><span class='op'>*</span><span class='kw'>const</span> (), <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>B</span><span class='op'>&gt;&gt;</span>(<span class='ident'>ptr</span>))
+                        )
                     )
-                };
+                });
                 <span class='ident'>tail</span>.<span class='ident'>push_back</span>(<span class='ident'>g</span>);
             },
         }
@@ -541,7 +510,7 @@
     <span class='doccomment'>///     .tail(|x| Some(x + 42u64 + 42u64))</span>
     <span class='doccomment'>///     .tail(|x| x.map(|y| y - 42u64))</span>
     <span class='doccomment'>///     .tail(|x| x.map(|y| y.to_string()));</span>
-    <span class='doccomment'>/// assert_eq!(f(0u64), Some(&quot;42&quot;.to_string()));</span>
+    <span class='doccomment'>/// assert_eq!(f.run(0u64), Some(&quot;42&quot;.to_string()));</span>
     <span class='doccomment'>/// ```</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>tail</span><span class='op'>&lt;</span><span class='ident'>C</span>, <span class='ident'>F</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>C</span><span class='op'>&gt;</span>
@@ -566,7 +535,7 @@
     <span class='doccomment'>/// for i in (0..10u64) {</span>
     <span class='doccomment'>///     (&amp;mut f).push_back(move |x| x + i);</span>
     <span class='doccomment'>/// }</span>
-    <span class='doccomment'>/// assert_eq!(f(0u64), 45u64);</span>
+    <span class='doccomment'>/// assert_eq!(f.run(0u64), 45u64);</span>
     <span class='doccomment'>/// ```</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>push_back</span><span class='op'>&lt;</span><span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> ()
@@ -598,7 +567,7 @@
     <span class='doccomment'>/// // the type changes to Morphism&lt;Option&lt;u64&gt;, String&gt; so rebind g</span>
     <span class='doccomment'>/// let g = g.tail(|x| x.map(|y| y + 1000u64).unwrap().to_string());</span>
     <span class='doccomment'>///</span>
-    <span class='doccomment'>/// assert_eq!(f.then(g)(0u64), &quot;1042&quot;.to_string());</span>
+    <span class='doccomment'>/// assert_eq!(f.then(g).run(0u64), &quot;1042&quot;.to_string());</span>
     <span class='doccomment'>/// ```</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>then</span><span class='op'>&lt;</span><span class='ident'>C</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='kw-2'>mut</span> <span class='ident'>other</span>: <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>B</span>, <span class='ident'>C</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>C</span><span class='op'>&gt;</span> {
@@ -630,34 +599,15 @@
     <span class='doccomment'>/// Given an argument, run the chain of closures in a loop and return the</span>
     <span class='doccomment'>/// final result.</span>
     <span class='attribute'>#[<span class='ident'>inline</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>run</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>x</span>: <span class='ident'>A</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span> { <span class='kw'>unsafe</span> {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='ident'>transmute</span>::<span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span>, <span class='op'>*</span><span class='kw'>const</span> ()<span class='op'>&gt;</span>(<span class='kw'>box</span> <span class='ident'>x</span>);
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>run</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, <span class='ident'>x</span>: <span class='ident'>A</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span> { <span class='kw'>unsafe</span> {
+        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='ident'>transmute</span>::<span class='op'>&lt;</span><span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>A</span><span class='op'>&gt;</span>, <span class='op'>*</span><span class='kw'>const</span> ()<span class='op'>&gt;</span>(<span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='ident'>x</span>));
         <span class='kw'>for</span> <span class='ident'>fns</span> <span class='kw'>in</span> <span class='self'>self</span>.<span class='ident'>mfns</span>.<span class='ident'>iter</span>() {
             <span class='kw'>for</span> <span class='ident'>f</span> <span class='kw'>in</span> <span class='ident'>fns</span>.<span class='ident'>iter</span>() {
-                <span class='ident'>res</span> <span class='op'>=</span> <span class='ident'>f</span>.<span class='ident'>call</span>((<span class='ident'>res</span>,));
+                <span class='ident'>res</span> <span class='op'>=</span> <span class='ident'>f</span>(<span class='ident'>res</span>);
             }
         }
         <span class='op'>*</span><span class='ident'>transmute</span>::<span class='op'>&lt;</span><span class='op'>*</span><span class='kw'>const</span> (), <span class='ident'>Box</span><span class='op'>&lt;</span><span class='ident'>B</span><span class='op'>&gt;&gt;</span>(<span class='ident'>res</span>)
     }}
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='ident'>FnOnce</span><span class='op'>&lt;</span>(<span class='ident'>A</span>,)<span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
-    <span class='kw'>type</span> <span class='ident'>Output</span> <span class='op'>=</span> <span class='ident'>B</span>;
-    <span class='kw'>extern</span> <span class='string'>&quot;rust-call&quot;</span> <span class='kw'>fn</span> <span class='ident'>call_once</span>(<span class='self'>self</span>, (<span class='ident'>x</span>,): (<span class='ident'>A</span>,)) <span class='op'>-&gt;</span> <span class='ident'>B</span> {
-        <span class='self'>self</span>.<span class='ident'>run</span>(<span class='ident'>x</span>)
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='ident'>FnMut</span><span class='op'>&lt;</span>(<span class='ident'>A</span>,)<span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
-    <span class='kw'>extern</span> <span class='string'>&quot;rust-call&quot;</span> <span class='kw'>fn</span> <span class='ident'>call_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, (<span class='ident'>x</span>,): (<span class='ident'>A</span>,)) <span class='op'>-&gt;</span> <span class='ident'>B</span> {
-        <span class='self'>self</span>.<span class='ident'>run</span>(<span class='ident'>x</span>)
-    }
-}
-
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='ident'>Fn</span><span class='op'>&lt;</span>(<span class='ident'>A</span>,)<span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
-    <span class='kw'>extern</span> <span class='string'>&quot;rust-call&quot;</span> <span class='kw'>fn</span> <span class='ident'>call</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>, (<span class='ident'>x</span>,): (<span class='ident'>A</span>,)) <span class='op'>-&gt;</span> <span class='ident'>B</span> {
-        <span class='self'>self</span>.<span class='ident'>run</span>(<span class='ident'>x</span>)
-    }
 }
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
@@ -686,22 +636,10 @@
 
         <span class='kw'>let</span> <span class='ident'>h</span> <span class='op'>=</span> <span class='ident'>f</span>.<span class='ident'>then</span>(<span class='ident'>g</span>);
 
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>h</span>(<span class='number'>0u64</span>), (<span class='prelude-val'>Some</span>(<span class='number'>1084</span>), <span class='boolval'>true</span>, <span class='string'>&quot;welp&quot;</span>.<span class='ident'>to_string</span>()));
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>h</span>(<span class='number'>1000u64</span>), (<span class='prelude-val'>Some</span>(<span class='number'>2084</span>), <span class='boolval'>true</span>, <span class='string'>&quot;welp&quot;</span>.<span class='ident'>to_string</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>h</span>.<span class='ident'>run</span>(<span class='number'>0u64</span>), (<span class='prelude-val'>Some</span>(<span class='number'>1084</span>), <span class='boolval'>true</span>, <span class='string'>&quot;welp&quot;</span>.<span class='ident'>to_string</span>()));
+        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>h</span>.<span class='ident'>run</span>(<span class='number'>1000u64</span>), (<span class='prelude-val'>Some</span>(<span class='number'>2084</span>), <span class='boolval'>true</span>, <span class='string'>&quot;welp&quot;</span>.<span class='ident'>to_string</span>()));
     }
 
-    <span class='attribute'>#[<span class='ident'>test</span>]</span>
-    <span class='kw'>fn</span> <span class='ident'>fn_like</span>() {
-        <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>f</span> <span class='op'>=</span> <span class='ident'>Morphism</span>::<span class='ident'>new</span>::<span class='op'>&lt;</span><span class='ident'>u64</span><span class='op'>&gt;</span>();
-        <span class='kw'>for</span> _ <span class='kw'>in</span> (<span class='number'>0</span>..<span class='number'>10000</span>) {
-            <span class='ident'>f</span> <span class='op'>=</span> <span class='ident'>f</span>.<span class='ident'>tail</span>(<span class='op'>|</span><span class='ident'>x</span><span class='op'>|</span> <span class='ident'>x</span> <span class='op'>+</span> <span class='number'>42</span>);
-        }
-
-        <span class='comment'>// ::map treats f like any other Fn</span>
-        <span class='kw'>let</span> <span class='ident'>res</span>: <span class='ident'>u64</span> <span class='op'>=</span> (<span class='number'>0</span>..<span class='number'>100</span>).<span class='ident'>map</span>(<span class='ident'>f</span>).<span class='ident'>sum</span>();
-
-        <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>res</span>, <span class='number'>42004950</span>);
-    }
 }
 </pre>
 </section>
