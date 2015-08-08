@@ -1,2 +1,2 @@
 # rust-coyoneda
-Functors for Rust via the co-Yoneda lemma.
+Functor composition via the Co-Yoneda Lemma

@@ -2,7 +2,7 @@
 name = "coyoneda"
 version = "0.3.0"
 authors = ["Sam Rijs <srijs@airpost.net>"]
-description = "Functors for Rust via the co-Yoneda lemma."
+description = "Functor composition via the Co-Yoneda Lemma"
 documentation = "http://srijs.github.io/rust-coyoneda/coyoneda"
 repository = "https://github.com/srijs/rust-coyoneda"
 license = "MIT"
