@@ -41,18 +41,24 @@
 //! Let's define a data type called `Coyoneda`:
 //!
 //! ```
-//! Coyoneda :: (b -> a) -> f b -> Coyoneda f a
+//! pub struct Coyoneda<'a, T: Param, B> {
+//!     point: T,
+//!     morph: Fn(T::Param) -> B + 'a
+//! }
 //! ```
-//!
-//! (Please bear with my Haskell syntax for a moment, since I believe it makes the point
-//! clearer. We'll be back to Rust in a second.)
 //!
 //! This datatype is a functor, which uses function composition
 //! to accumulate the mapping function, without changing the captured
-//! `f b`. The implementation for `fmap` is trivial:
+//! `T`. The implementation for `Functor` is trivial:
 //!
 //! ```
-//! fmap f (Coyoneda g a) = Coyoneda (f . g) a
+//! impl<'a, T: Param, B, C> Functor<'a, B, C> for Coyoneda<'a, T, B> {
+//!     type Output = Coyoneda<'a, T, C>;
+//!     fn fmap<F: Fn(B) -> C + 'a>(self, f: F) -> Coyoneda<'a, T, C> {
+//!         let g = self.morph;
+//!         Coyoneda{point: self.point, morph: move |x| f(g(x))}
+//!     }
+//! }
 //! ```
 //!
 //! The co-yoneda lemma states that for a covariant functor `f`,
@@ -69,7 +75,7 @@
 //! by operating on our `Coyoneda` type:
 //!
 //! ```
-//! fn add_and_to_string<T>(y: Coyoneda<T, i32>) -> Coyoneda<T, String> {
+//! fn add_and_to_string<T: Param>(y: Coyoneda<T, i32>) -> Coyoneda<T, String> {
 //!    y.fmap(|n: i32| n + 1)
 //!     .fmap(|n: i32| n.to_string())
 //! }
@@ -95,42 +101,44 @@ mod morphism;
 
 use morphism::Morphism;
 
-pub trait Unary {
-    type Param;
-}
+pub trait Param { type Param; }
 
-pub trait Functor<'a, A, B> {
+pub trait Functor<'a, A, B>: Param {
     type Output;
     fn fmap<F: Fn(A) -> B + 'a>(self, F) -> Self::Output;
 }
 
-pub struct Coyoneda<'a, T, B> where T: Unary {
+pub struct Coyoneda<'a, T: Param, B> {
     point: T,
     morph: Morphism<'a, T::Param, B>
 }
 
-impl<'a, T: Unary, B> Coyoneda<'a, T, B> {
-    pub fn unwrap(self) -> <T as Functor<'a, <T as Unary>::Param, B>>::Output
-        where T: Functor<'a, <T as Unary>::Param, B>, <T as Unary>::Param: 'a, B: 'a, T: 'a {
+impl<'a, T: 'a + Param, B: 'a> Coyoneda<'a, T, B> {
+    pub fn unwrap(self) -> <T as Functor<'a, <T as Param>::Param, B>>::Output
+        where T: Functor<'a, <T as Param>::Param, B>, <T as Param>::Param: 'a {
         let m = self.morph;
         T::fmap(self.point, move |a| { m.run(a) })
     }
 }
 
-impl<'a, T: Unary, B, C> Functor<'a, B, C> for Coyoneda<'a, T, B> {
+impl<'a, T: Param, B> Param for Coyoneda<'a, T, B> {
+    type Param = B;
+}
+
+impl<'a, T: Param, B, C> Functor<'a, B, C> for Coyoneda<'a, T, B> {
     type Output = Coyoneda<'a, T, C>;
     fn fmap<F: Fn(B) -> C + 'a>(self, f: F) -> Coyoneda<'a, T, C> {
         Coyoneda{point: self.point, morph: self.morph.tail(f)}
     }
 }
 
-impl<'a, T: Unary> From<T> for Coyoneda<'a, T, <T as Unary>::Param> {
-    fn from(x: T) -> Coyoneda<'a, T, <T as Unary>::Param> {
+impl<'a, T: Param> From<T> for Coyoneda<'a, T, <T as Param>::Param> {
+    fn from(x: T) -> Coyoneda<'a, T, <T as Param>::Param> {
         Coyoneda{point: x, morph: Morphism::new()}
     }
 }
 
-impl<A> Unary for Box<A> {
+impl<A> Param for Box<A> {
     type Param = A;
 }
 
@@ -141,7 +149,7 @@ impl<'a, A, B> Functor<'a, A, B> for Box<A> {
     }
 }
 
-impl<A> Unary for Option<A> {
+impl<A> Param for Option<A> {
     type Param = A;
 }
 
@@ -152,7 +160,7 @@ impl<'a, A, B> Functor<'a, A, B> for Option<A> {
     }
 }
 
-impl<A, E> Unary for Result<A, E> {
+impl<A, E> Param for Result<A, E> {
     type Param = A;
 }
 
@@ -168,7 +176,7 @@ mod test {
 
     use super::*;
 
-    fn add_and_to_string<T: Unary>(y: Coyoneda<T, i32>) -> Coyoneda<T, String> {
+    fn add_and_to_string<T: Param>(y: Coyoneda<T, i32>) -> Coyoneda<T, String> {
         y.fmap(|n: i32| n + 1)
          .fmap(|n: i32| n.to_string())
          .fmap(|s| s + "foo")
