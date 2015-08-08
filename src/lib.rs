@@ -47,6 +47,9 @@
 //! Coyoneda :: (b -> a) -> f b -> Coyoneda f a
 //! ```
 //!
+//! (Please bear with my Haskell syntax for a moment, since I believe it makes the point
+//! clearer. We'll be back to Rust in a second.)
+//!
 //! This datatype is a functor, which uses function composition
 //! to accumulate the mapping function, without changing the captured
 //! `f b`. The implementation for `fmap` is trivial:
