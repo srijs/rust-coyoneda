@@ -104,7 +104,7 @@ use morphism::Morphism;
 pub trait Param { type Param; }
 
 pub trait Functor<'a, A, B>: Param {
-    type Output;
+    type Output: Param<Param=B>;
     fn fmap<F: Fn(A) -> B + 'a>(self, F) -> Self::Output;
 }
 
