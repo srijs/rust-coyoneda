@@ -8,9 +8,10 @@
 //! will look something like this:
 //!
 //! ```
-//! pub trait Functor<'a, A, B> {
-//!    type Output;
-//!    fn fmap<F: Fn(A) -> B + 'a>(self, F) -> Self::Output;
+//! pub trait Param { type Param; }
+//! pub trait Functor<'a, B>: Param {
+//!     type Output: Param<Param=B>;
+//!     fn fmap<F: Fn(Self::Param) -> B + 'a>(self, F) -> Self::Output;
 //! }
 //! ```
 //!
@@ -20,7 +21,8 @@
 //! For example, the following will not compile:
 //!
 //! ```
-//! fn add_and_to_string<'a, F: Functor<'a, i32, String>>(x: F) -> F::Output {
+//! fn add_and_to_string<'a, F>(x: F) -> <F as Functor<'a, String>>::Output
+//!    where F: Param<Param=i32> + Functor<'a, i32> + Functor<'a, String> {
 //!    x.fmap(|n: i32| n + 1)
 //!     .fmap(|n: i32| n.to_string())
 //! }
@@ -52,7 +54,7 @@
 //! `T`. The implementation for `Functor` is trivial:
 //!
 //! ```
-//! impl<'a, T: Param, B, C> Functor<'a, B, C> for Coyoneda<'a, T, B> {
+//! impl<'a, T: Param, B, C> Functor<'a, C> for Coyoneda<'a, T, B> {
 //!     type Output = Coyoneda<'a, T, C>;
 //!     fn fmap<F: Fn(B) -> C + 'a>(self, f: F) -> Coyoneda<'a, T, C> {
 //!         let g = self.morph;
@@ -103,9 +105,9 @@ use morphism::Morphism;
 
 pub trait Param { type Param; }
 
-pub trait Functor<'a, A, B>: Param {
+pub trait Functor<'a, B>: Param {
     type Output: Param<Param=B>;
-    fn fmap<F: Fn(A) -> B + 'a>(self, F) -> Self::Output;
+    fn fmap<F: Fn(Self::Param) -> B + 'a>(self, F) -> Self::Output;
 }
 
 pub struct Coyoneda<'a, T: Param, B> {
@@ -131,8 +133,8 @@ impl<'a, T: 'a + Param, B: 'a> Coyoneda<'a, T, B> {
         Coyoneda{point: t.transform(), morph: m}
     }
 
-    pub fn unwrap(self) -> <T as Functor<'a, <T as Param>::Param, B>>::Output
-        where T: Functor<'a, <T as Param>::Param, B>, <T as Param>::Param: 'a {
+    pub fn unwrap(self) -> <T as Functor<'a, B>>::Output
+        where T: Functor<'a, B>, <T as Param>::Param: 'a {
         let m = self.morph;
         T::fmap(self.point, move |a| { m.run(a) })
     }
@@ -143,7 +145,7 @@ impl<'a, T: Param, B> Param for Coyoneda<'a, T, B> {
     type Param = B;
 }
 
-impl<'a, T: Param, B, C> Functor<'a, B, C> for Coyoneda<'a, T, B> {
+impl<'a, T: Param, B, C> Functor<'a, C> for Coyoneda<'a, T, B> {
     type Output = Coyoneda<'a, T, C>;
     fn fmap<F: Fn(B) -> C + 'a>(self, f: F) -> Coyoneda<'a, T, C> {
         Coyoneda{point: self.point, morph: self.morph.tail(f)}
@@ -160,7 +162,7 @@ impl<A> Param for Box<A> {
     type Param = A;
 }
 
-impl<'a, A, B> Functor<'a, A, B> for Box<A> {
+impl<'a, A, B> Functor<'a, B> for Box<A> {
     type Output = Box<B>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Box::new(f(*self))
@@ -177,7 +179,7 @@ impl<A> Param for Option<A> {
     type Param = A;
 }
 
-impl<'a, A, B> Functor<'a, A, B> for Option<A> {
+impl<'a, A, B> Functor<'a, B> for Option<A> {
     type Output = Option<B>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Option::map(self, f)
@@ -188,7 +190,7 @@ impl<A, E> Param for Result<A, E> {
     type Param = A;
 }
 
-impl<'a, A, B, E> Functor<'a, A, B> for Result<A, E> {
+impl<'a, A, B, E> Functor<'a, B> for Result<A, E> {
     type Output = Result<B, E>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Result::map(self, f)
