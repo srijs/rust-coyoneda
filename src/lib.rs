@@ -114,11 +114,19 @@ pub struct Coyoneda<'a, T: Param, B> {
 }
 
 impl<'a, T: 'a + Param, B: 'a> Coyoneda<'a, T, B> {
+
+    pub fn transform<U: Param, F, G>(self, f: F, g: G) -> Coyoneda<'a, U, B>
+        where F: Fn(T) -> U, G: 'a + Fn(U::Param) -> T::Param {
+        let Coyoneda{point: t, morph: m} = self;
+        Coyoneda{point: f(t), morph: m.head(g)}
+    }
+
     pub fn unwrap(self) -> <T as Functor<'a, <T as Param>::Param, B>>::Output
         where T: Functor<'a, <T as Param>::Param, B>, <T as Param>::Param: 'a {
         let m = self.morph;
         T::fmap(self.point, move |a| { m.run(a) })
     }
+
 }
 
 impl<'a, T: Param, B> Param for Coyoneda<'a, T, B> {
