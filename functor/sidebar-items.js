@@ -1,0 +1,1 @@
+initSidebarItems({"mod":[["isomorphism",""],["parametric",""]],"trait":[["Bivariant",""],["Contravariant",""],["ContravariantOnce",""],["Covariant",""],["CovariantOnce",""],["Invariant",""],["InvariantOnce",""],["NaturalTransform",""]]});

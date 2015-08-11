@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Coyoneda",""]],"trait":[["Functor",""],["Param",""]]});
+initSidebarItems({"struct":[["Coyoneda",""]]});
