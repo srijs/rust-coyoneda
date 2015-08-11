@@ -247,6 +247,14 @@
 <span id="205">205</span>
 <span id="206">206</span>
 <span id="207">207</span>
+<span id="208">208</span>
+<span id="209">209</span>
+<span id="210">210</span>
+<span id="211">211</span>
+<span id="212">212</span>
+<span id="213">213</span>
+<span id="214">214</span>
+<span id="215">215</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! # Functor composition via the Co-Yoneda Lemma</span>
 <span class='doccomment'>//!</span>
@@ -364,11 +372,19 @@
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Param</span>, <span class='ident'>B</span>: <span class='lifetime'>&#39;a</span><span class='op'>&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
+
+    <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>transform</span><span class='op'>&lt;</span><span class='ident'>U</span>: <span class='ident'>Param</span>, <span class='ident'>F</span>, <span class='ident'>G</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>, <span class='ident'>g</span>: <span class='ident'>G</span>) <span class='op'>-&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>U</span>, <span class='ident'>B</span><span class='op'>&gt;</span>
+        <span class='kw'>where</span> <span class='ident'>F</span>: <span class='ident'>Fn</span>(<span class='ident'>T</span>) <span class='op'>-&gt;</span> <span class='ident'>U</span>, <span class='ident'>G</span>: <span class='lifetime'>&#39;a</span> <span class='op'>+</span> <span class='ident'>Fn</span>(<span class='ident'>U</span>::<span class='ident'>Param</span>) <span class='op'>-&gt;</span> <span class='ident'>T</span>::<span class='ident'>Param</span> {
+        <span class='kw'>let</span> <span class='ident'>Coyoneda</span>{<span class='ident'>point</span>: <span class='ident'>t</span>, <span class='ident'>morph</span>: <span class='ident'>m</span>} <span class='op'>=</span> <span class='self'>self</span>;
+        <span class='ident'>Coyoneda</span>{<span class='ident'>point</span>: <span class='ident'>f</span>(<span class='ident'>t</span>), <span class='ident'>morph</span>: <span class='ident'>m</span>.<span class='ident'>head</span>(<span class='ident'>g</span>)}
+    }
+
     <span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>unwrap</span>(<span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='op'>&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='op'>&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Param</span><span class='op'>&gt;</span>::<span class='ident'>Param</span>, <span class='ident'>B</span><span class='op'>&gt;&gt;</span>::<span class='ident'>Output</span>
         <span class='kw'>where</span> <span class='ident'>T</span>: <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='op'>&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Param</span><span class='op'>&gt;</span>::<span class='ident'>Param</span>, <span class='ident'>B</span><span class='op'>&gt;</span>, <span class='op'>&lt;</span><span class='ident'>T</span> <span class='kw'>as</span> <span class='ident'>Param</span><span class='op'>&gt;</span>::<span class='ident'>Param</span>: <span class='lifetime'>&#39;a</span> {
         <span class='kw'>let</span> <span class='ident'>m</span> <span class='op'>=</span> <span class='self'>self</span>.<span class='ident'>morph</span>;
         <span class='ident'>T</span>::<span class='ident'>fmap</span>(<span class='self'>self</span>.<span class='ident'>point</span>, <span class='kw'>move</span> <span class='op'>|</span><span class='ident'>a</span><span class='op'>|</span> { <span class='ident'>m</span>.<span class='ident'>run</span>(<span class='ident'>a</span>) })
     }
+
 }
 
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='ident'>Param</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='ident'>Param</span> <span class='kw'>for</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
@@ -488,6 +504,10 @@
                 <code>struct</code>, <code>enum</code>,
                 <code>trait</code>, <code>typedef</code> (or
                 <code>tdef</code>).
+            </p>
+            <p>
+                Search functions by type signature (e.g.
+                <code>vec -> usize</code>)
             </p>
         </div>
     </div>

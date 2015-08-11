@@ -42,8 +42,10 @@
 
     <section id='main' class="content mod">
 <h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>coyoneda</a></span><span class='out-of-band'><span id='render-detail'>
-            <a id="toggle-all-docs" href="#" title="collapse all docs">[&minus;]</a>
-        </span><a id='src-0' class='srclink' href='../src/coyoneda/lib.rs.html#1-207' title='goto source code'>[src]</a></span></h1>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-0' class='srclink' href='../src/coyoneda/lib.rs.html#1-215' title='goto source code'>[src]</a></span></h1>
 <div class='docblock'>
 <h1 id="functor-composition-via-the-co-yoneda-lemma" class='section-header'><a
                            href="#functor-composition-via-the-co-yoneda-lemma">Functor composition via the Co-Yoneda Lemma</a></h1>
@@ -53,7 +55,7 @@
 
 <p>Working around the lack of higher-kinded types, our trait for a functor
 will look something like this:</p>
-<pre id='rust-example-rendered' class='rust '>
+<pre class='rust rust-example-rendered'>
 <span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
    <span class='kw'>type</span> <span class='ident'>Output</span>;
    <span class='kw'>fn</span> <span class='ident'>fmap</span><span class='op'>&lt;</span><span class='ident'>F</span>: <span class='ident'>Fn</span>(<span class='ident'>A</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>Self</span>::<span class='ident'>Output</span>;
@@ -64,7 +66,7 @@ will look something like this:</p>
 types which are functors, but it is not possible to write a function
 operating on a generic functor type and using <code>fmap</code> more than once.
 For example, the following will not compile:</p>
-<pre id='rust-example-rendered' class='rust '>
+<pre class='rust rust-example-rendered'>
 <span class='kw'>fn</span> <span class='ident'>add_and_to_string</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>F</span>: <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>i32</span>, <span class='ident'>String</span><span class='op'>&gt;&gt;</span>(<span class='ident'>x</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>F</span>::<span class='ident'>Output</span> {
    <span class='ident'>x</span>.<span class='ident'>fmap</span>(<span class='op'>|</span><span class='ident'>n</span>: <span class='ident'>i32</span><span class='op'>|</span> <span class='ident'>n</span> <span class='op'>+</span> <span class='number'>1</span>)
     .<span class='ident'>fmap</span>(<span class='op'>|</span><span class='ident'>n</span>: <span class='ident'>i32</span><span class='op'>|</span> <span class='ident'>n</span>.<span class='ident'>to_string</span>())
@@ -84,7 +86,7 @@ and can be <code>fmap</code>&#39;ed further.</p>
 <h2 id="the-co-yoneda-lemma" class='section-header'><a
                            href="#the-co-yoneda-lemma">The Co-Yoneda Lemma</a></h2>
 <p>Let&#39;s define a data type called <code>Coyoneda</code>:</p>
-<pre id='rust-example-rendered' class='rust '>
+<pre class='rust rust-example-rendered'>
 <span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='ident'>Param</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
     <span class='ident'>point</span>: <span class='ident'>T</span>,
     <span class='ident'>morph</span>: <span class='ident'>Fn</span>(<span class='ident'>T</span>::<span class='ident'>Param</span>) <span class='op'>-&gt;</span> <span class='ident'>B</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span>
@@ -94,7 +96,7 @@ and can be <code>fmap</code>&#39;ed further.</p>
 <p>This datatype is a functor, which uses function composition
 to accumulate the mapping function, without changing the captured
 <code>T</code>. The implementation for <code>Functor</code> is trivial:</p>
-<pre id='rust-example-rendered' class='rust '>
+<pre class='rust rust-example-rendered'>
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>: <span class='ident'>Param</span>, <span class='ident'>B</span>, <span class='ident'>C</span><span class='op'>&gt;</span> <span class='ident'>Functor</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>B</span>, <span class='ident'>C</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
     <span class='kw'>type</span> <span class='ident'>Output</span> <span class='op'>=</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>C</span><span class='op'>&gt;</span>;
     <span class='kw'>fn</span> <span class='ident'>fmap</span><span class='op'>&lt;</span><span class='ident'>F</span>: <span class='ident'>Fn</span>(<span class='ident'>B</span>) <span class='op'>-&gt;</span> <span class='ident'>C</span> <span class='op'>+</span> <span class='lifetime'>&#39;a</span><span class='op'>&gt;</span>(<span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>T</span>, <span class='ident'>C</span><span class='op'>&gt;</span> {
@@ -116,7 +118,7 @@ we can lift functors into Coyoneda to compose them safely within Rust&#39;s type
 
 <p>For example, let&#39;s implement a function that is generic for any functor,
 by operating on our <code>Coyoneda</code> type:</p>
-<pre id='rust-example-rendered' class='rust '>
+<pre class='rust rust-example-rendered'>
 <span class='kw'>fn</span> <span class='ident'>add_and_to_string</span><span class='op'>&lt;</span><span class='ident'>T</span>: <span class='ident'>Param</span><span class='op'>&gt;</span>(<span class='ident'>y</span>: <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>i32</span><span class='op'>&gt;</span>) <span class='op'>-&gt;</span> <span class='ident'>Coyoneda</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>String</span><span class='op'>&gt;</span> {
    <span class='ident'>y</span>.<span class='ident'>fmap</span>(<span class='op'>|</span><span class='ident'>n</span>: <span class='ident'>i32</span><span class='op'>|</span> <span class='ident'>n</span> <span class='op'>+</span> <span class='number'>1</span>)
     .<span class='ident'>fmap</span>(<span class='op'>|</span><span class='ident'>n</span>: <span class='ident'>i32</span><span class='op'>|</span> <span class='ident'>n</span>.<span class='ident'>to_string</span>())
@@ -124,13 +126,13 @@ by operating on our <code>Coyoneda</code> type:</p>
 </pre>
 
 <p>Given we implemented a functor for <code>Option</code>, we can now do the following:</p>
-<pre id='rust-example-rendered' class='rust '>
+<pre class='rust rust-example-rendered'>
 <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>add_and_to_string</span>(<span class='ident'>From</span>::<span class='ident'>from</span>(<span class='prelude-val'>Some</span>(<span class='number'>42</span>)));
 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>y</span>.<span class='ident'>unwrap</span>(), <span class='prelude-val'>Some</span>(<span class='string'>&quot;43&quot;</span>.<span class='ident'>to_string</span>()))
 </pre>
 
 <p>... or for <code>Box</code>:</p>
-<pre id='rust-example-rendered' class='rust '>
+<pre class='rust rust-example-rendered'>
 <span class='kw'>let</span> <span class='ident'>y</span> <span class='op'>=</span> <span class='ident'>add_and_to_string</span>(<span class='ident'>From</span>::<span class='ident'>from</span>(<span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='number'>42</span>)));
 <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>y</span>.<span class='ident'>unwrap</span>(), <span class='ident'>Box</span>::<span class='ident'>new</span>(<span class='string'>&quot;43&quot;</span>.<span class='ident'>to_string</span>()))
 </pre>
@@ -194,6 +196,10 @@ by operating on our <code>Coyoneda</code> type:</p>
                 <code>struct</code>, <code>enum</code>,
                 <code>trait</code>, <code>typedef</code> (or
                 <code>tdef</code>).
+            </p>
+            <p>
+                Search functions by type signature (e.g.
+                <code>vec -> usize</code>)
             </p>
         </div>
     </div>
