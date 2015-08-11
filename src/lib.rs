@@ -113,6 +113,10 @@ pub struct Coyoneda<'a, T: Param, B> {
     morph: Morphism<'a, T::Param, B>
 }
 
+pub trait NaturalTransform<T: Param<Param=Self::Param>>: Param {
+    fn transform(self) -> T;
+}
+
 impl<'a, T: 'a + Param, B: 'a> Coyoneda<'a, T, B> {
 
     pub fn transform<U: Param, F, G>(self, f: F, g: G) -> Coyoneda<'a, U, B>
@@ -121,10 +125,10 @@ impl<'a, T: 'a + Param, B: 'a> Coyoneda<'a, T, B> {
         Coyoneda{point: f(t), morph: m.head(g)}
     }
 
-    pub fn natural_transform<U, F>(self, f: F) -> Coyoneda<'a, U, B>
-        where U: Param<Param=T::Param>, F: Fn(T) -> U {
+    pub fn natural_transform<U: Param<Param=T::Param>>(self) -> Coyoneda<'a, U, B>
+        where T: NaturalTransform<U> {
         let Coyoneda{point: t, morph: m} = self;
-        Coyoneda{point: f(t), morph: m}
+        Coyoneda{point: t.transform(), morph: m}
     }
 
     pub fn unwrap(self) -> <T as Functor<'a, <T as Param>::Param, B>>::Output
@@ -163,6 +167,12 @@ impl<'a, A, B> Functor<'a, A, B> for Box<A> {
     }
 }
 
+impl<A> NaturalTransform<Option<A>> for Box<A> {
+    fn transform(self) -> Option<A> {
+        Option::Some(*self)
+    }
+}
+
 impl<A> Param for Option<A> {
     type Param = A;
 }
@@ -182,6 +192,15 @@ impl<'a, A, B, E> Functor<'a, A, B> for Result<A, E> {
     type Output = Result<B, E>;
     fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
         Result::map(self, f)
+    }
+}
+
+impl<A, E> NaturalTransform<Option<A>> for Result<A, E> {
+    fn transform(self) -> Option<A> {
+        match self {
+            Ok(a) => Some(a),
+            Err(_) => None
+        }
     }
 }
 
@@ -227,10 +246,18 @@ mod test {
     }
 
     #[test]
-    fn natural_transform() {
+    fn natural_transform_box_to_option() {
         let x = Box::new(42);
         let y = add_and_to_string(From::from(x));
-        let z = y.natural_transform(|x| Option::Some(*x));
+        let z = y.natural_transform();
+        assert_eq!(z.unwrap(), Some("43foobar".to_string()))
+    }
+
+    #[test]
+    fn natural_transform_result_to_option() {
+        let x: Result<i32, ()> = Ok(42);
+        let y = add_and_to_string(From::from(x));
+        let z = y.natural_transform();
         assert_eq!(z.unwrap(), Some("43foobar".to_string()))
     }
 
