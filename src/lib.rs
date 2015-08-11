@@ -121,6 +121,12 @@ impl<'a, T: 'a + Param, B: 'a> Coyoneda<'a, T, B> {
         Coyoneda{point: f(t), morph: m.head(g)}
     }
 
+    pub fn natural_transform<U, F>(self, f: F) -> Coyoneda<'a, U, B>
+        where U: Param<Param=T::Param>, F: Fn(T) -> U {
+        let Coyoneda{point: t, morph: m} = self;
+        Coyoneda{point: f(t), morph: m}
+    }
+
     pub fn unwrap(self) -> <T as Functor<'a, <T as Param>::Param, B>>::Output
         where T: Functor<'a, <T as Param>::Param, B>, <T as Param>::Param: 'a {
         let m = self.morph;
@@ -192,24 +198,40 @@ mod test {
     }
 
     #[test]
-    fn test_box() {
+    fn fmap_box() {
         let x = Box::new(42);
-        let y = add_and_to_string(From::from(x)).unwrap();
-        assert_eq!(y, Box::new("43foobar".to_string()))
+        let y = add_and_to_string(From::from(x));
+        assert_eq!(y.unwrap(), Box::new("43foobar".to_string()))
     }
 
     #[test]
-    fn test_option() {
+    fn fmap_option() {
         let x = Some(42);
-        let y = add_and_to_string(From::from(x)).unwrap();
-        assert_eq!(y, Some("43foobar".to_string()))
+        let y = add_and_to_string(From::from(x));
+        assert_eq!(y.unwrap(), Some("43foobar".to_string()))
     }
 
     #[test]
-    fn test_result() {
+    fn fmap_result() {
         let x: Result<i32, ()> = Ok(42);
-        let y = add_and_to_string(From::from(x)).unwrap();
-        assert_eq!(y, Ok("43foobar".to_string()))
+        let y = add_and_to_string(From::from(x));
+        assert_eq!(y.unwrap(), Ok("43foobar".to_string()))
+    }
+
+    #[test]
+    fn transform() {
+        let x = Box::new(42);
+        let y = add_and_to_string(From::from(x));
+        let z = y.transform(|x| Option::Some(*x as usize), |x| x as i32);
+        assert_eq!(z.unwrap(), Some("43foobar".to_string()))
+    }
+
+    #[test]
+    fn natural_transform() {
+        let x = Box::new(42);
+        let y = add_and_to_string(From::from(x));
+        let z = y.natural_transform(|x| Option::Some(*x));
+        assert_eq!(z.unwrap(), Some("43foobar".to_string()))
     }
 
 }
