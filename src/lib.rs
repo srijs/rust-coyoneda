@@ -99,43 +99,24 @@
 //!
 //! ... and for every other functor as well. Yay!
 
+extern crate functor;
+
 mod morphism;
 
 use morphism::Morphism;
-
-pub trait Param { type Param; }
-
-pub trait ReParam<B>: Param { type Output: Param<Param=B>; }
-
-pub trait Functor<'a, B>: ReParam<B> {
-    fn fmap<F: Fn(Self::Param) -> B + 'a>(self, F) -> Self::Output;
-}
+use functor::{Covariant, NaturalTransform};
+use functor::parametric::{Param, ReParam};
 
 pub struct Coyoneda<'a, T: Param, B> {
     point: T,
     morph: Morphism<'a, T::Param, B>
 }
 
-pub trait NaturalTransform<T: Param<Param=Self::Param>>: Param {
-    fn transform(self) -> T;
-}
 
 impl<'a, T: 'a + Param, B: 'a> Coyoneda<'a, T, B> {
 
-    pub fn transform<U: Param, F, G>(self, f: F, g: G) -> Coyoneda<'a, U, B>
-        where F: Fn(T) -> U, G: 'a + Fn(U::Param) -> T::Param {
-        let Coyoneda{point: t, morph: m} = self;
-        Coyoneda{point: f(t), morph: m.head(g)}
-    }
-
-    pub fn natural_transform<U: Param<Param=T::Param>>(self) -> Coyoneda<'a, U, B>
-        where T: NaturalTransform<U> {
-        let Coyoneda{point: t, morph: m} = self;
-        Coyoneda{point: t.transform(), morph: m}
-    }
-
     pub fn unwrap(self) -> <T as ReParam<B>>::Output
-        where T: Functor<'a, B>, <T as Param>::Param: 'a {
+        where T: Covariant<'a, B>, <T as Param>::Param: 'a {
         let m = self.morph;
         T::fmap(self.point, move |a| { m.run(a) })
     }
@@ -150,7 +131,7 @@ impl<'a, T: Param, B, C> ReParam<C> for Coyoneda<'a, T, B> {
     type Output = Coyoneda<'a, T, C>;
 }
 
-impl<'a, T: Param, B, C> Functor<'a, C> for Coyoneda<'a, T, B> {
+impl<'a, T: Param, B, C> Covariant<'a, C> for Coyoneda<'a, T, B> {
     fn fmap<F: Fn(B) -> C + 'a>(self, f: F) -> Coyoneda<'a, T, C> {
         Coyoneda{point: self.point, morph: self.morph.tail(f)}
     }
@@ -162,60 +143,10 @@ impl<'a, T: Param> From<T> for Coyoneda<'a, T, <T as Param>::Param> {
     }
 }
 
-impl<A> Param for Box<A> {
-    type Param = A;
-}
-
-impl<A, B> ReParam<B> for Box<A> {
-    type Output = Box<B>;
-}
-
-impl<'a, A, B> Functor<'a, B> for Box<A> {
-    fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
-        Box::new(f(*self))
-    }
-}
-
-impl<A> NaturalTransform<Option<A>> for Box<A> {
-    fn transform(self) -> Option<A> {
-        Option::Some(*self)
-    }
-}
-
-impl<A> Param for Option<A> {
-    type Param = A;
-}
-
-impl<A, B> ReParam<B> for Option<A> {
-    type Output = Option<B>;
-}
-
-impl<'a, A, B> Functor<'a, B> for Option<A> {
-    fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
-        Option::map(self, f)
-    }
-}
-
-impl<A, E> Param for Result<A, E> {
-    type Param = A;
-}
-
-impl<A, B, E> ReParam<B> for Result<A, E> {
-    type Output = Result<B, E>;
-}
-
-impl<'a, A, B, E> Functor<'a, B> for Result<A, E> {
-    fn fmap<F: Fn(A) -> B>(self, f: F) -> Self::Output {
-        Result::map(self, f)
-    }
-}
-
-impl<A, E> NaturalTransform<Option<A>> for Result<A, E> {
-    fn transform(self) -> Option<A> {
-        match self {
-            Ok(a) => Some(a),
-            Err(_) => None
-        }
+impl<'a, T, U, B> NaturalTransform<Coyoneda<'a, U, B>> for Coyoneda<'a, T, B>
+    where T: Param + NaturalTransform<U>, U: Param<Param=T::Param> {
+    fn transform(self) -> Coyoneda<'a, U, B> {
+        Coyoneda{point: self.point.transform(), morph: self.morph}
     }
 }
 
@@ -223,6 +154,8 @@ mod test {
 #![cfg(test)]
 
     use super::*;
+    use functor::{Covariant, NaturalTransform};
+    use functor::parametric::Param;
 
     fn add_and_to_string<T: Param>(y: Coyoneda<T, i32>) -> Coyoneda<T, String> {
         y.fmap(|n: i32| n + 1)
@@ -253,18 +186,10 @@ mod test {
     }
 
     #[test]
-    fn transform() {
-        let x = Box::new(42);
-        let y = add_and_to_string(From::from(x));
-        let z = y.transform(|x| Option::Some(*x as usize), |x| x as i32);
-        assert_eq!(z.unwrap(), Some("43foobar".to_string()))
-    }
-
-    #[test]
     fn natural_transform_box_to_option() {
         let x = Box::new(42);
         let y = add_and_to_string(From::from(x));
-        let z = y.natural_transform();
+        let z = y.transform();
         assert_eq!(z.unwrap(), Some("43foobar".to_string()))
     }
 
@@ -272,7 +197,7 @@ mod test {
     fn natural_transform_result_to_option() {
         let x: Result<i32, ()> = Ok(42);
         let y = add_and_to_string(From::from(x));
-        let z = y.natural_transform();
+        let z = y.transform();
         assert_eq!(z.unwrap(), Some("43foobar".to_string()))
     }
 

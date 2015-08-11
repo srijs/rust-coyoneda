@@ -10,3 +10,6 @@ license = "MIT"
 [lib]
 name = "coyoneda"
 doctest = false
+
+[dependencies]
+functor = "0.1.1"
