@@ -100,8 +100,8 @@
 //! ... and for every other functor as well. Yay!
 
 extern crate functor;
+extern crate morphism;
 
-mod morphism;
 
 use morphism::Morphism;
 use functor::{Covariant, NaturalTransform};

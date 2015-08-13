@@ -13,3 +13,4 @@ doctest = false
 
 [dependencies]
 functor = "0.1.1"
+morphism = "0.4.0"
