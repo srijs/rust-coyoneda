@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `src/morphism.rs`.">
+    <meta name="description" content="Source to the Rust file `/Users/sreis/.cargo/registry/src/github.com-0a35038f75765ae4/morphism-0.4.0/src/lib.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
-    <title>morphism.rs.html -- source</title>
+    <title>lib.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../main.css">
 
@@ -340,7 +340,15 @@
 <span id="298">298</span>
 <span id="299">299</span>
 <span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
 </pre><pre class='rust '>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>crate_name</span><span class='op'>=</span><span class='string'>&quot;morphism&quot;</span>]</span>
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>crate_type</span><span class='op'>=</span><span class='string'>&quot;lib&quot;</span>]</span>
+
+<span class='attribute'>#<span class='op'>!</span>[<span class='ident'>doc</span>(<span class='ident'>html_root_url</span> <span class='op'>=</span> <span class='string'>&quot;http://epsilonz.github.io/morphism.rs/doc/morphism/&quot;</span>)]</span>
+
 <span class='doccomment'>//! This crate provides a structure for suspended closure composition.</span>
 <span class='doccomment'>//! Composition is delayed and executed in a loop when a `Morphism` is</span>
 <span class='doccomment'>//! applied to an argument.</span>
@@ -397,7 +405,6 @@
     }
 }
 
-<span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>dead_code</span>)]</span>
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>B</span>, <span class='ident'>C</span><span class='op'>&gt;</span> <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>B</span>, <span class='ident'>C</span><span class='op'>&gt;</span> {
     <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>unsafe_push_front</span><span class='op'>&lt;</span><span class='ident'>A</span>, <span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> ()
@@ -472,7 +479,6 @@
     }
 }
 
-<span class='attribute'>#[<span class='ident'>allow</span>(<span class='ident'>dead_code</span>)]</span>
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> <span class='ident'>Morphism</span><span class='op'>&lt;</span><span class='lifetime'>&#39;a</span>, <span class='ident'>A</span>, <span class='ident'>B</span><span class='op'>&gt;</span> {
     <span class='attribute'>#[<span class='ident'>inline</span>(<span class='ident'>always</span>)]</span>
     <span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>fn</span> <span class='ident'>unsafe_push_back</span><span class='op'>&lt;</span><span class='ident'>C</span>, <span class='ident'>F</span><span class='op'>&gt;</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>, <span class='ident'>f</span>: <span class='ident'>F</span>) <span class='op'>-&gt;</span> ()
@@ -686,7 +692,7 @@
 
     <script>
         window.rootPath = "../../";
-        window.currentCrate = "coyoneda";
+        window.currentCrate = "morphism";
         window.playgroundUrl = "";
     </script>
     <script src="../../jquery.js"></script>
