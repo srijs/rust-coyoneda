@@ -1,11 +1,11 @@
 [package]
 name = "coyoneda"
-version = "0.5.1"
+version = "0.5.2"
 authors = ["Sam Rijs <srijs@airpost.net>"]
 description = "Functor composition via the Co-Yoneda Lemma"
 documentation = "http://srijs.github.io/rust-coyoneda/coyoneda"
 repository = "https://github.com/srijs/rust-coyoneda"
-license = "MIT"
+license = "MIT OR Apache-2.0"
 
 [lib]
 name = "coyoneda"
